@@ -13,7 +13,7 @@ describe("Donation NFT", function() {
     const donationNFT = await DonationNFT.deploy(donationToken.address);  
     await donationNFT.deployed();
 
-    const price = BigNumber.from("1");
+    const price = 1;
 
     await donationNFT .setKidToDonate(kidToDonate.address);
     await donationNFT.setNFTToSale(
