@@ -1,23 +1,17 @@
 import Nullstack from 'nullstack';
 import './Home.css';
-import { ethers } from 'ethers'
-import Web3Modal from 'web3modal'
-import {
-  donationNFTAddress, donationTokenAddress
-} from '../config';
-import DonationNFT from '../artifacts/contracts/DonationNFT.sol/DonationNFT.json'
-import DonationToken from './artifacts/contracts/DonationToken.sol/DonationToken.json'
-import Cookies from 'js-cookie';
-
-const WALLWET_ADDRESS = `WALLWET_ADDRESS`;
+import ipfs from './lib/ipfs';
+import NFTManager from './lib/NFTManager';
 
 class Home extends Nullstack {
   wallet = {
     balance: "",
-    walletAddress: '',
+    address: '',
     provider: null,
     signer: null,
+    isAdmin: false,
   };
+  
   name = '';
   description = '';
   price = '';
@@ -25,7 +19,8 @@ class Home extends Nullstack {
   urlDonate = '';
   market = {
     allNFTs: []
-  };
+  }
+  kidWallet = ''
 
   prepare({ project, page }) {
     page.title = `${project.name} - Welcome to Nullstack!`;
@@ -33,185 +28,118 @@ class Home extends Nullstack {
   }
 
   async hydrate() {
-    console.log('hydrate')
-
-    if(Cookies.get(WALLWET_ADDRESS)){
-      await this.connectWallet();
-      await this.fetchAllNFTs();
+    if (NFTManager.isConnected()) {
+      this.connectWallet();
     }
-  }
-
-  async fetchAllNFTs() {
-    const contractNFT = new ethers.Contract(donationNFTAddress, DonationNFT.abi, this.wallet.signer)
-    const allNFTs =  await contractNFT.getAllNFTs()
-    this.market.allNFTs = [...allNFTs];
-    console.log('All NFTs',allNFTs[0].tokenURI, allNFTs[0].donate.tokenURI)
-  }
-
-  renderLink({ children, href }) {
-    const link = href + '?ref=create-nullstack-app';
-    return (
-      <a href={link} target="_blank" rel="noopener noreferrer">
-        {children}
-      </a>
-    )
+    this.market.allNFTs = await NFTManager.fetchAllNFTs();
   }
 
   async connectWallet() {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect()
-    this.wallet.provider = await (new ethers.providers.Web3Provider(connection))
-    this.wallet.signer = await this.wallet.provider.getSigner();
-    this.wallet.address = await this.wallet.signer.getAddress();
-
-    Cookies.set(WALLWET_ADDRESS, this.wallet.address);
-    const contract = new ethers.Contract(donationTokenAddress, DonationToken.abi, this.wallet.signer)
-    const currentBalance = await contract.balanceOf(this.wallet.address);
-    this.wallet.balance = `${currentBalance.toString()}DN `;
+    const wallet = await NFTManager.connectWallet();
+    this.wallet.balance = wallet.balance;
+    this.wallet.address = wallet.address;
+    this.wallet.signer = wallet.signer;
+    this.wallet.isAdmin = wallet.isAdmin;
+    this.wallet.contractToken = wallet.contractToken;
   }
 
   async disconnectWallet() {
-    Cookies.remove(WALLWET_ADDRESS);
-    this.wallet= {
+    NFTManager.clearCookieWallet();
+    this.wallet = {
       balance: "",
-      walletAddress: '',
+      address: '',
       provider: null,
-      signer: null
+      signer: null,
+      isAdmin: false,
     };
+    this.market.allNFTs = await NFTManager.fetchAllNFTs();
   }
 
-  async buyToken() {
-
-    const contract = new ethers.Contract(donationTokenAddress, DonationToken.abi, this.wallet.signer)
-    const price = ethers.utils.parseUnits("0.1", 'ether')   
-    const transaction = await contract.purchase(1, {
-      value: price
-    })
-    await transaction.wait()
-    const currentBalance = await contract.balanceOf(this.wallet.address);
-    this.wallet.balance = `${currentBalance.toString()}DN `;
-  }
-
-  async buyNFT() {
-
-  }
-
-  async mintNFT(){
-    // await this.upload()
-    const web3Modal = new Web3Modal()
-    const connection = await web3Modal.connect()
-    const provider = new ethers.providers.Web3Provider(connection)
-    const signer = provider.getSigner()
-    console.log(await signer.getAddress())
-    /* create the NFT */
-    let contract = new ethers.Contract(donationNFTAddress, DonationNFT.abi, signer)
-    console.log(this.url, this.urlDonate)
-    const transaction = await contract.setNFTToSale(this.url, this.urlDonate)
-    console.log(await transaction.wait())
-
-    // let listingPrice = await contract.getListingPrice()
-    // listingPrice = listingPrice.toString()
-    // let transaction = await contract.createToken(url, price, { value: listingPrice })
-    // await transaction.wait()
+  async setKidToDonate() {
+    await NFTManager.setKidToDonate(this.wallet.signer, this.kidWallet);
   }
 
   async onChange({ ipfsClient, event }) {
-    const file = event.target.files[0]
-    try {
-      const added = await ipfsClient.add(
-        file,
-        {
-          progress: (prog) => console.log(`received: ${prog}`)
-        }
-      )
-      this.url =  `https://ipfs.infura.io/ipfs/${added.path}`
-      console.log(this.url)
-    } catch (error) {
-      console.log('Error uploading file: ', error)
-    }  
+    const file = event.target.files[0];
+    this.url = await ipfs.addFile(ipfsClient, file);
   }
 
   async onChangeDonate({ ipfsClient, event }) {
     const file = event.target.files[0]
-    try {
-      const added = await ipfsClient.add(
-        file,
-        {
-          progress: (prog) => console.log(`received: ${prog}`)
-        }
-      )
-      this.urlDonate =  `https://ipfs.infura.io/ipfs/${added.path}`
-      console.log(this.urlDonate)
-    } catch (error) {
-      console.log('Error uploading file: ', error)
-    }  
+    this.urlDonate = await ipfs.addFile(ipfsClient, file);
   }
 
-  async upload() {
-    console.log(1)
-    await this.uploadToIPFS();
-    console.log(2)
-    await this.uploadToIPFSDonate();
-  }
-  async uploadToIPFS({ ipfsClient }) {
-    console.log(this.name ,this.description ,this.price ,this.url)
-    if (!this.name || !this.description || !this.price || !this.url) return
-    /* first, upload metadata to IPFS */
-    const data = JSON.stringify({
-      name: this.name, description: this.description, image: this.url
-    })
-    try {
-      const added = await ipfsClient.add(data)
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`
-      /* after metadata is uploaded to IPFS, return the URL to use it in the transaction */
-      this.url = url;
-    } catch (error) {
-      console.log('Error uploading file: ', error)
-    }  
+  async uploadNFT({ ipfsClient }) {
+    this.url = await ipfs.uploadToIPFS(ipfsClient, this.name, this.description, this.price, this.url);
   }
 
-  async uploadToIPFSDonate({ ipfsClient }) {
-    console.log(this.name ,this.description ,this.price ,this.url)
-    if (!this.name || !this.description || !this.price || !this.urlDonate) return
-    /* first, upload metadata to IPFS */
-    const data = JSON.stringify({
-      name: `${this.name} - Donate`, description: this.description, image: this.urlDonate
-    })
-    try {
-      const added = await ipfsClient.add(data)
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`
-      /* after metadata is uploaded to IPFS, return the URL to use it in the transaction */
-      return url
-    } catch (error) {
-      console.log('Error uploading file: ', error)
-    }  
+  async uploadNFTDonate({ ipfsClient }) {
+    this.urlDonate = await ipfs.uploadToIPFS(ipfsClient, this.name, this.description, this.price, this.urlDonate)
   }
 
-  render({ project }) {
+  async mintNFT() {
+    await this.uploadNFT();
+    await this.uploadNFTDonate();
+    this.market.allNFTs = await NFTManager.mintNFT(
+      {
+        signer: this.wallet.signer,
+        url: this.url,
+        name: this.name,
+        description: this.description,
+        price: this.price,
+        urlDonate: this.urlDonate,
+        nameDonate: this.name + 'Donate',
+        descriptionDonate: this.description + 'Donate',
+      }
+    );
+  }
+
+  async buyToken() {
+
+    if (!NFTManager.isConnected()) {
+      await this.connectWallet()
+    }
+  
+    this.wallet.balance = await NFTManager.buyToken(this.wallet.signer, this.wallet.address)
+  }
+
+  async buyNFT({ data: { tokenURI } }) {
+    if (!NFTManager.isConnected()) {
+      await this.connectWallet();
+    }
+    this.market.allNFTs = await NFTManager.buyNFT(this.wallet.contractToken, this.wallet.signer, tokenURI)
+  }
+
+  render() {
     return (
       <div style="display: flex; flex-direction: column">
-          <div>
+        <div style="color: black">
+          <div style="display: flex; flex-direction: column;">
             <b>{this.wallet.balance}</b>
             <b>{this.wallet.address}</b>
-            {this.wallet.address && <button onclick={this.disconnectWallet}>Disconnect Wallet</button>}
-            {!this.wallet.address && <button onclick={this.connectWallet}>Connect Wallet</button>}
-            {this.wallet.address && <button onclick={this.buyToken}>Buy token</button>}
-            {this.wallet.address && <button onclick={this.buyNFT}>Buy NFT</button>}
           </div>
-        <div>
-          {this.wallet.address && (
-            <div className="flex justify-center">
-            <div className="w-1/2 flex flex-col pb-12">
-              <input 
+          <br />
+          {this.wallet.address && <button onclick={this.disconnectWallet}>Disconnect Wallet</button>}
+          {!this.wallet.address && <button onclick={this.connectWallet}>Connect Wallet</button>}
+          {<button onclick={this.buyToken}>Buy token</button>}
+        </div>
+        {this.wallet.address && this.wallet.isAdmin && (
+          <div>
+            <br />
+            <div style="display: flex; flex-direction: column; width: 600px;">
+              <input
                 placeholder="Asset Name" bind={this.name}
               />
+              <br />
               <textarea
                 placeholder="Asset Description" bind={this.description}
               />
+              <br />
               <input type={'number'}
                 placeholder="Asset Price in Eth"
                 bind={this.price}
               />
+              <br />
               <input
                 type="file"
                 name="Asset"
@@ -219,9 +147,10 @@ class Home extends Nullstack {
               />
               {
                 this.url && (
-                  <img className="rounded mt-4" width="350" src={this.url} />
+                  <img className="rounded mt-4" style="width: 220px; height: 220px;" src={this.url} />
                 )
               }
+              <br />
               <input
                 type="file"
                 name="Asset"
@@ -229,24 +158,42 @@ class Home extends Nullstack {
               />
               {
                 this.urlDonate && (
-                  <img className="rounded mt-4" width="350" src={this.urlDonate} />
+                  <img className="rounded mt-4" style="width: 220px; height: 220px;" src={this.urlDonate} />
                 )
               }
+              <br />
               <button onclick={this.mintNFT} className="font-bold mt-4 bg-pink-500 text-white rounded p-4 shadow-lg">
                 Mint NFT
               </button>
             </div>
           </div>
-          )}
+        )}
+        {this.wallet.address && this.wallet.isAdmin && (
+          <div>
+            <br />
+            <input
+              placeholder="Kid Wallet" bind={this.kidWallet}
+            />
+            <button onclick={this.setKidToDonate} className="font-bold mt-4 bg-pink-500 text-white rounded p-4 shadow-lg">
+              set Kid Wallet
+            </button>
+            <br /><br />
+          </div>
+        )}
+        <div style="color: black;">
+          total {this.market.allNFTs?.length}
+          {this.market?.allNFTs.map(nft => {
+            return (
+              <div style="display: flex; flex-direction: row">
+                <div><img src={nft.imageUrl} style="width: 220px; height: 220px;" /></div>
+                <div><img src={nft.donate.imageUrl} style="width: 220px; height: 220px;" /></div>
+                <div><button onclick={this.buyNFT} data={{ tokenURI: nft.tokenURI }} className="font-bold mt-4 bg-pink-500 text-white rounded p-4 shadow-lg">
+                  Buy NFT
+                </button></div>
+              </div>
+            )
+          })}
         </div>
-        <div>
-          {this.market.allNFTs.length && <img src={this.market.allNFTs[0]?.tokenURI} style="width: 220px; height: 220px;"/>}
-          {this.market.allNFTs.length && <img src={this.market.allNFTs[0]?.donate?.tokenURI} style="width: 220px; height: 220px;"/>}
-          <button onclick={this.mintNFT} className="font-bold mt-4 bg-pink-500 text-white rounded p-4 shadow-lg">
-            Buy NFT
-          </button>
-        </div>
-        
       </div>
     )
   }
@@ -254,42 +201,3 @@ class Home extends Nullstack {
 }
 
 export default Home;
-
-// // const provider = new ethers.providers.JsonRpcProvider();
-//     // const contract = new ethers.Contract(donationNFTAddress, DonationNFT.abi, provider)
-//     // const data = await contract.fetchAllNFTS();
-//     // this.minted2 = data;
-//     try{
-
-//       // console.log(1);
-//       // const web3Modal = new Web3Modal();
-//       // console.log(2);
-//       // const connection = await web3Modal.connect();
-//       // console.log(3)
-//       // alert(3)
-//       // const provider = new ethers.providers.Web3Provider(connection)
-//       // alert(4)
-//       // const signer = provider.getSigner()
-//       // alert(5)
-//       // const contract = new ethers.Contract(donationTokenAddress, DonationToken.abi, signer);
-//       // alert(6)
-//       // const balance = await contract.balanceOf(signer);
-//       // alert(balance)
-//     }catch(e){
-//       console.log(e)
-//     }
-  
-      // /* user will be prompted to pay the asking proces to complete the transaction */
-      // const price = ethers.utils.parseUnits(nft.price.toString(), 'ether')   
-      // const transaction = await contract.createMarketSale(nft.tokenId, {
-      //   value: price
-      // })
-      // await transaction.wait()
-
-       
-
-      // const price = ethers.utils.parseUnits("0.1", 'ether')   
-      // const transaction = await contract.purchase(1, {
-      //   value: price
-      // })
-      // console.log( await transaction.wait().catch(e => e.message))

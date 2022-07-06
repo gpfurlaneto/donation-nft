@@ -12,6 +12,8 @@ async function main() {
   const donationNFT = await DonationNFT.deploy(donationToken.address);
   await donationNFT.deployed();
 
+  console.log("DonationNFT deployed to:", donationNFT.address);
+
   fs.writeFileSync('./config.js', `
     export const donationTokenAddress = "${donationToken.address}";
     export const donationNFTAddress = "${donationNFT.address}";
