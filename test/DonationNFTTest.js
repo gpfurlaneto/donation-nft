@@ -8,7 +8,8 @@ describe("Donation NFT", function() {
     const [, buyerAddress, kidToDonate] = await ethers.getSigners();
     const DonationToken = await ethers.getContractFactory("DonationToken")
     const donationToken = await DonationToken.deploy();
-    await donationToken.deployed()
+    await donationToken.deployed();
+
     const DonationNFT = await ethers.getContractFactory("DonationNFT");
     const donationNFT = await DonationNFT.deploy(donationToken.address);  
     await donationNFT.deployed();

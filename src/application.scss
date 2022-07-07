@@ -1,0 +1,22 @@
+html {
+    background: #000;
+    color: white;
+  }
+  
+  body {
+    background: radial-gradient(
+      50% 50% at 0% 0%,
+      rgba(255, 136, 150, 0.3975) 0%,
+      rgba(255, 136, 150, 0) 100%
+    ),
+    radial-gradient(
+      50% 50% at 100% 50%,
+      rgba(255, 136, 150, 0.4028) 0%,
+      rgba(253, 200, 11, 0) 100%
+    ),
+    radial-gradient(
+      50% 50% at 0% 100%,
+      rgba(253, 200, 11, 0.3552) 0%,
+      rgba(255, 136, 150, 0) 100%
+    );
+}

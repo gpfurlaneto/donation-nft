@@ -1,7 +1,6 @@
 import Nullstack from 'nullstack';
-import './Home.css';
-import ipfs from './lib/ipfs';
-import NFTManager from './lib/NFTManager';
+import ipfs from '../lib/ipfs';
+import NFTManager from '../lib/NFTManager';
 
 class Home extends Nullstack {
   wallet = {
@@ -113,7 +112,7 @@ class Home extends Nullstack {
   render() {
     return (
       <div style="display: flex; flex-direction: column">
-        <div style="color: black">
+        <div style="">
           <div style="display: flex; flex-direction: column;">
             <b>{this.wallet.balance}</b>
             <b>{this.wallet.address}</b>
@@ -131,11 +130,11 @@ class Home extends Nullstack {
                 placeholder="Asset Name" bind={this.name}
               />
               <br />
-              <textarea
+              <textarea class="text-black"
                 placeholder="Asset Description" bind={this.description}
               />
               <br />
-              <input type={'number'}
+              <input type={'number'} class="text-black"
                 placeholder="Asset Price in Eth"
                 bind={this.price}
               />
@@ -180,14 +179,14 @@ class Home extends Nullstack {
             <br /><br />
           </div>
         )}
-        <div style="color: black;">
+        <div>
           total {this.market.allNFTs?.length}
           {this.market?.allNFTs.map(nft => {
             return (
-              <div style="display: flex; flex-direction: row">
+              <div style="display: flex; flex-direction: col">
                 <div><img src={nft.imageUrl} style="width: 220px; height: 220px;" /></div>
-                <div><img src={nft.donate.imageUrl} style="width: 220px; height: 220px;" /></div>
-                <div><button onclick={this.buyNFT} data={{ tokenURI: nft.tokenURI }} className="font-bold mt-4 bg-pink-500 text-white rounded p-4 shadow-lg">
+                <div><img src={nft.donate.imageUrl} style="width: 220px; height: 220px;" />
+                <button onclick={this.buyNFT} data={{ tokenURI: nft.tokenURI }}>
                   Buy NFT
                 </button></div>
               </div>

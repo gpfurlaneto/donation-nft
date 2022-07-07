@@ -8,8 +8,11 @@
     "nullstack": "~0.15.0"
   },
   "scripts": {
-    "start": "npx nullstack start",
-    "build": "npx nullstack build --mode=ssr",
+    "start-nullstack": "npx nullstack start",
+    "build-nullstack": "npx nullstack build --mode=ssr",
+    "start-tailwind": "npx tailwindcss -i ./src/tailwind.css -o ./src/styles.css --watch",
+    "build-tailwind": "npx tailwindcss -i ./src/tailwind.css -o ./src/styles.css",
+    "start": "concurrently \"npm run start-tailwind\" \"npm run start-nullstack\"",
     "hardhat-note": "npx hardhat node",
     "deploy": "npx hardhat run scripts/deploy.js --network localhost",
     "test-nft": "npx hardhat test"
@@ -20,12 +23,14 @@
     "@openzeppelin/contracts": "^4.7.0",
     "axios": "^0.27.2",
     "chai": "^4.3.6",
+    "concurrently": "^7.2.2",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.9",
     "hardhat": "^2.9.9",
     "ipfs-http-client": "^57.0.3",
     "js-cookie": "^3.0.1",
     "request": "^2.88.2",
+    "tailwindcss": "^3.1.4",
     "web3modal": "^1.9.8"
   }
 }
