@@ -12,8 +12,8 @@ export default function CubesDetailNFT({ url1, url2 }) {
       <div class="relative top-[-15px] left-[188px]"><Connection /></div>
       <div class="relative top-[-24px] left-[210px]"><VerticalBubble /></div>
       <div class="relative top-[-130px] left-[4px]"><SmallCube /></div>
-      <div class="relative left-[9px] top-[-812px]"><img class="w-[371px] h-[349px]" src={url1}/></div>
-      <div class="relative left-[6px] top-[-688px]"><img class="w-[196px] h-[184px]"src={url2}/></div>
+      <div class="relative left-[11px] top-[-810px]"><img class="w-[366px] h-[345px]" src={url1}/></div>
+      <div class="relative left-[8px] top-[-682px]"><img class="w-[191px] h-[180px]"src={url2}/></div>
       <div class="relative top-[-865px] left-[282px] px-[8.74px] py-[7.65px] max-w-fit bg-mustard font-extrabold text-black">Donation</div>
     </div>
   </>

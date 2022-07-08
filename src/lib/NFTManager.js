@@ -24,7 +24,7 @@ async function fetchAllNFTs() {
   })))];
 }
 
-async function connectWallet(context) {
+async function connectWallet() {
   const web3Modal = new Web3Modal();
   const connection = await web3Modal.connect()
 

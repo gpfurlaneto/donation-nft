@@ -4,13 +4,13 @@ import CubesDetailNFT from '../components/CubesDetailNFT'
 import MagnifierIcon from '../icons/wallet'
 import ButtonLink from '../layout/buttonLink'
 import NFTManager from '../lib/NFTManager';
-
+import Offer from '../icons/offer';
 class NFTDetail extends Nullstack {
 
   async buyNFT(context) {
     const { _wallet, data: { tokenURI } } = context;
     if (!NFTManager.isConnected()) {
-      await this.connectWallet();
+      context._wallet = await NFTManager.connectWallet();
     }
     context._allNFTs = await NFTManager.buyNFT(_wallet.contractToken, _wallet.signer, tokenURI)
   }
@@ -61,9 +61,10 @@ class NFTDetail extends Nullstack {
             </button>
             <ButtonLink
               href="/taps"
-              clazz="w-32 border border-rose bg-transparent text-rose"
+              clazz="px-5 border border-rose bg-transparent text-rose flex flex-row items-center"
             >
-              Buy TAPs
+              <span class="mr-2"><Offer /></span>
+              Make Offer
             </ButtonLink>
           </div>
           <h2 class={`font-extrabold leading-relaxed text-xl pt-[32px] pb-[10px]`}>
