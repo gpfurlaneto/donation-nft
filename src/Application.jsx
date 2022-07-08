@@ -6,7 +6,7 @@ import Home1 from './pages/Home1'
 import TAPs from './pages/TAPs'
 import WTF from './pages/WTF'
 import PublicProfile from './pages/PublicProfile'
-
+import NFTDetail from './pages/NFTDetail'
 import './application.scss'
 import './styles.css'
 
@@ -40,6 +40,7 @@ class Application extends Nullstack {
         <Home1 route="/home1" />
         <PublicProfile route="/public-profile/:walletAddressFilter" />
         <Admin route="/admin/*" />
+        <NFTDetail route="/nft-detail" />
       </>
     )
   }

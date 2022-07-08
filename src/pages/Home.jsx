@@ -38,15 +38,17 @@ class Home extends Nullstack {
 
   renderMiddleContent() {
     return (
-      <section class="my-32 text-center">
+      <section class="m-32 text-center">
+        <div class="mx-auto mb-10 max-w-[380px]">
         <Title
           text="Don't let these weary children lose their"
           highlightedText="last shreds of hope"
         />
+        </div>
         <div class="flex justify-between">
           <div class="flex w-72 flex-col items-center">
-            <img src="/unimaginable-home.png" width={200} alt="" />
-            <h3 class="mb-3 font-extrabold">Unimaginable poverty</h3>
+            <img src="/home2.png" width={200} alt="" />
+            <h3 class="pt-3 mb-3 font-extrabold">Unimaginable poverty</h3>
             <p>
               There are children raised in unimaginable poverty. Not only are
               they deprived of clean water, nutritious food, reliable
@@ -55,8 +57,8 @@ class Home extends Nullstack {
             </p>
           </div>
           <div class="flex w-72 flex-col items-center">
-            <img src="/theyneedyou-home.png" width={'200'} alt="" />
-            <h3 class="mb-3 font-extrabold">They need you</h3>
+            <img src="/home2.png" width={'200'} alt="" />
+            <h3 class="pt-3 mb-3 font-extrabold">They need you</h3>
             <p>
               Please offer your support. Even if a warlord steals their family’s
               smartphone, you will have provided a “token” of non-fungible
@@ -64,8 +66,8 @@ class Home extends Nullstack {
             </p>
           </div>
           <div class="flex w-72 flex-col items-center">
-            <img src="/bottleofhope-home.png" width={'200'} alt="" />
-            <h3 class="mb-3 font-extrabold">A bottle of hope</h3>
+            <img src="/home3.png" width={'200'} alt="" />
+            <h3 class="pt3 mb-3 font-extrabold">A bottle of hope</h3>
             <p>
               Every dehydrated child can receive an NFT of a water bottle today,
               if only you can find it in your heart and crypto-wallet to give.

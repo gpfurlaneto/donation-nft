@@ -74,7 +74,7 @@ class Header extends Nullstack {
       <div class="flex flex-row items-center pt-3 ">
         <TapIcon/>
         <div class="text-center ml-5 mr-10">
-          <div class="text-sm text-left font-medium">{_wallet?.balance} TAP</div>
+          <div class="text-sm text-left font-medium">{_wallet?.balance} TAPs</div>
           <div class="text-wallet-tap">{_wallet.label}</div>
         </div>
       </div>
